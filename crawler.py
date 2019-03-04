@@ -7,7 +7,7 @@ import sys
 class AnchorTagCrawler(object):
 
     def __init__(self, url_list, threads=1, iterations=1):
-        self.keys = ''
+
         self.urls = [url_list]
         self.max_threads = threads
         self.count = 0
