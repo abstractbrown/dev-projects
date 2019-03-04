@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from bs4 import BeautifulSoup
 import requests
 import sys
+import os
 
 
 class AnchorTagCrawler(object):
