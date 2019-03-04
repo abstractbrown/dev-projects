@@ -1,9 +1,10 @@
+
 from concurrent.futures import ThreadPoolExecutor
 from bs4 import BeautifulSoup
 import requests
 
 
-class AnchorCrawler(object):
+class ConcurrentCrawler(object):
 
     def __init__(self, url_list, threads=1, iterations=1):
         self.keys = ''
@@ -24,12 +25,11 @@ class AnchorCrawler(object):
             r = requests.get(url=url, timeout=60)
         except requests.exceptions.RequestException as e:
             raise e
-        return r.text
+        return r.url, r.text
 
-    # PARSES URL RESULTS AND WRITES TO FILE
+    # PARSES AND WRITES HTML TO FILE BEFORE SECOND ITERATION
     def __parse_results(self, url, html):
-
-        links = []
+        self.links = []
 
         try:
             soup = BeautifulSoup(html, 'html.parser')
@@ -37,24 +37,24 @@ class AnchorCrawler(object):
                 ref = link.get('href').split(':')
                 # CREATES LIST OF LINKS
                 if ref[0] == 'http' or ref[0] == 'https':
-                    links.append(link.get('href'))
+                    self.links.append(link.get('href'))
         except Exception as e:
             raise e
 
-        self.__write_to_file(url, links)
+        # WRITES OUTPUT TO FILE
+        with open('crawled_urls.txt', 'a') as f:
+            f.write(url + '\n')
+
+        for l in self.links:
+            with open('crawled_urls.txt', 'a') as f:
+                f.write('    ' + l + '\n')
 
         # ITERATES NEWLY FOUND URLS SET BY ITERATION NUMBER
         if self.count < self.iterations:
-            self.crawl_again(links)
+            self.crawl_again(self.links)
 
-    def __write_to_file(self, url_text, link_text):
-        # WRITES OUTPUT TO FILE
-        with open('crawled_urls.txt', 'a') as f:
-            f.write(url_text + '\n')
-
-        for link in link_text:
-            with open('crawled_urls.txt', 'a') as f:
-                f.write('    ' + link + '\n')
+    def __write_to_file(self, text):
+        pass
 
     # CRAWLS NEWLY FOUND URLS
     def crawl_again(self, results):
@@ -66,8 +66,9 @@ class AnchorCrawler(object):
 
     # REQUESTS HTML TEXT AND CALLS RESULT PARSING
     def wrapper(self, url):
-        html = self.__make_request(url)
-        self.__parse_results(url, html)
+        print('This URL ' + url)
+        url, html = self.__make_request(url)
+        self.__parse_results(html)
 
     # RUNS SCRIPT
     def run_script(self):
@@ -77,6 +78,6 @@ class AnchorCrawler(object):
 
 if __name__ == '__main__':
 
-    example = AnchorCrawler(['http://www.rescale.com'])
+    example = ConcurrentCrawler(['http://www.rescale.com'])
 
     example.run_script()
