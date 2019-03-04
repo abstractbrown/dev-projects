@@ -86,6 +86,6 @@ if __name__ == '__main__':
 
     input1 = sys.argv[1]
 
-    example = AnchorTagCrawler(input1)
+    crawl = AnchorTagCrawler(input1)
 
-    example.run_script()
+    crawl.run_script()
